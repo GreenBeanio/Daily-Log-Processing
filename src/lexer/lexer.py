@@ -6,6 +6,7 @@ class LexerTokenEnum(Enum):
     COMMENT = 2
     TIME = 3
     SENTENCE = 4
+    END_OF_INPUT = 5
 
 class LexerNoMatchError(Exception):
     """Error to handle a lexer token not matching"""
@@ -16,6 +17,9 @@ class Lexeme:
     def __init__(self, identifier: LexerTokenEnum, text: str):
         self.identifier = identifier
         self.text = text
+    
+    def __repr__(self):
+        return f"{self.identifier}\n{self.text}"
 
 class LexerToken:
     """Class to define tokens"""
@@ -54,11 +58,11 @@ class LexerTokens:
 
 class Lexer:
     """Class for the main lexer"""
-    def __init__(self, lexer_tokens: LexerTokens, src_txt: str):
+    def __init__(self, lexer_tokens: LexerTokens):
         self.lexer_tokens: LexerTokens = lexer_tokens
         self.lexed: list[Lexeme] = []
         self.buffer: str = ""
-        self.stack = src_txt
+        self.stack = ""
 
     def _itrChar(self):
         """Method to move 1 character from the stack to the buffer"""
@@ -95,16 +99,33 @@ class Lexer:
                 return token.checkChar(self.stack)
             except:
                 pass
-        raise LexerNoMatchError("Lexer._checkChar() no token match")
+        raise LexerNoMatchError("Lexer._checkChar() has no token match")
             
-    def searchLexer(self):
+    def reset(self):
+        self.lexed = []
+        self.buffer = ""
+        self.stack = ""
+
+    def searchLexer(self, src_txt: str):
         """Method to search the Lexer"""
+        self.reset()
+        self.stack = src_txt
         while True:
             try:
                 self._addMatch(self._checkChar())
             except:
-                self._itrChar()
+                if len(self.stack) != 0:
+                    self._itrChar()
             if len(self.stack) == 0:
                 if len(self.buffer) >= 1:
                     self._addBuffer()
+                self.lexed.append(Lexeme(LexerTokenEnum.END_OF_INPUT, ""))
                 break
+
+    def removeLexeme(self, remove_len: int):
+        """
+        """
+        if len(self.lexed) >= remove_len:
+            self.lexed = self.lexed[remove_len:]
+        else:
+            raise ValueError("Lexer.removeLexeme() remove_len is larger than self.lexed")
