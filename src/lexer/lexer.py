@@ -102,6 +102,7 @@ class Lexer:
         raise LexerNoMatchError("Lexer._checkChar() has no token match")
             
     def reset(self):
+        """Method to reset the Lexer"""
         self.lexed = []
         self.buffer = ""
         self.stack = ""
